@@ -5,6 +5,7 @@ export type UserType = {
   password?: string;
   phone: string;
   acceptTerm: boolean;
+  receiveOffers: boolean;
 };
 
 export type UserReplacePasswordType = {

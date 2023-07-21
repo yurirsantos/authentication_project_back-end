@@ -97,7 +97,7 @@ export class UserController {
     @Body() Body: UserType,
     @Headers('Authorization') authHeader: string,
   ) {
-    const { email, name, phone, acceptTerm } = Body;
+    const { email, name, phone, acceptTerm, receiveOffers } = Body;
     let { password } = Body;
 
     password = await bcrypt.hash(password, saltOrRounds);
@@ -121,6 +121,7 @@ export class UserController {
           password,
           phone,
           acceptTerm,
+          receiveOffers,
         },
       });
     } catch (error) {
@@ -147,7 +148,7 @@ export class UserController {
   @UseGuards(AuthGuard('jwt'))
   @Put('users/update/:userId')
   async update(@Param('userId') userId: string, @Body() Body: UserType) {
-    const { email, name, phone, acceptTerm } = Body;
+    const { email, name, phone, acceptTerm, receiveOffers } = Body;
 
     if (name.length <= 3) {
       throw new HttpException(
@@ -169,6 +170,7 @@ export class UserController {
           name,
           phone,
           acceptTerm,
+          receiveOffers,
         },
       });
     } catch (error) {

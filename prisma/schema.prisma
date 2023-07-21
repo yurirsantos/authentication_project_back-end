@@ -8,12 +8,13 @@ datasource db {
 }
 
 model Users {
-  id         String   @id
-  name       String
-  email      String   @unique
-  phone      String   @unique
-  password   String
-  acceptTerm Boolean
-  createdAt  DateTime @default(now())
-  updateAt   DateTime @default(now())
+  id            String   @id
+  name          String
+  email         String   @unique
+  phone         String   @unique
+  password      String
+  acceptTerm    Boolean
+  receiveOffers Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updateAt      DateTime @default(now())
 }
