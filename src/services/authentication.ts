@@ -21,6 +21,12 @@ export class AuthenticationService {
     return this.prisma.users.findFirst({ where: { email } });
   }
 
+  private async findUserByPhone(phone: string): Promise<UserType | null> {
+    phone = phone.replace(/\D/g, '')
+    return this.prisma.users.findFirst({ where: { phone } });
+  }
+
+
   private async comparePasswords(
     inputPassword: string,
     hashedPassword: string,
@@ -28,9 +34,15 @@ export class AuthenticationService {
     return bcrypt.compare(inputPassword, hashedPassword);
   }
 
-  async authenticate(email: string, password: string) {
+  async authenticate(login: string, password: string) {
     try {
-      const user: UserType | null = await this.findUserByEmail(email);
+      let user: UserType;
+
+      user = await this.findUserByEmail(login);
+
+      if (user == null) {
+        user = await this.findUserByPhone(login);
+      }
 
       if (!user) {
         throw new HttpException(

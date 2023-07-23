@@ -111,6 +111,15 @@ export class UserController {
         HttpStatus.FORBIDDEN,
       );
     }
+    if (phone.length != 13) {
+      throw new HttpException(
+        {
+          status: HttpStatus.FORBIDDEN,
+          error: 'Phone is invalid!',
+        },
+        HttpStatus.FORBIDDEN,
+      );
+    }
 
     try {
       return await this.prisma.users.create({

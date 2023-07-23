@@ -1,0 +1,35 @@
+version: '3'
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '3001:3001'
+    environment:
+      - DATABASE_URL=postgresql://admin:admin@db:5432/AuthenticationProject
+    depends_on:
+      - db
+    command: sh -c "npm install && npx prisma migrate dev && npm run start"
+
+  db:
+    image: postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: AuthenticationProject
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  reactjs:
+    container_name: reactjs
+    build:
+      context: ../authentication_project_front-end
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - app
+    restart: always
+volumes:
+  db_data:

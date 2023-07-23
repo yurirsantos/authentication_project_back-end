@@ -9,7 +9,7 @@ export class AuthController {
 
   @Post('auth')
   async authenticationLogin(@Body() loginData: LoginType) {
-    const { email, password } = loginData;
-    return this.authenticationService.authenticate(email, password);
+    const { login, password } = loginData;
+    return this.authenticationService.authenticate(login, password);
   }
 }
