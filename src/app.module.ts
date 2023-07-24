@@ -6,7 +6,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { PrismaService } from './prisma.service';
 import { AuthenticationService } from './services/authentication';
 import { PassportJWT } from './services/passport-JWT';
-
+import { TwilioSmsService } from './services/twilio-sms.service';
 @Module({
   imports: [
     PassportModule,
@@ -16,7 +16,12 @@ import { PassportJWT } from './services/passport-JWT';
     }),
   ],
   controllers: [UserController, AuthController],
-  providers: [PrismaService, AuthenticationService, PassportJWT],
+  providers: [
+    PrismaService,
+    AuthenticationService,
+    PassportJWT,
+    TwilioSmsService,
+  ],
 })
 // eslint-disable-next-line prettier/prettier
 export class AppModule { }

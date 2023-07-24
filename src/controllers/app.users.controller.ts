@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Body,
@@ -19,6 +20,8 @@ import { randomUUID } from 'crypto';
 import * as bcrypt from 'bcrypt';
 import { AuthenticationService } from 'src/services/authentication';
 import { AuthGuard } from '@nestjs/passport';
+import { TwilioSmsService } from 'src/services/twilio-sms.service';
+const nodemailer = require('nodemailer');
 
 const saltOrRounds = 10;
 
@@ -26,7 +29,7 @@ const saltOrRounds = 10;
 @Controller()
 export class UserController {
   // eslint-disable-next-line prettier/prettier
-  constructor(private readonly prisma: PrismaService, private authService: AuthenticationService) { }
+  constructor(private readonly prisma: PrismaService, private authService: AuthenticationService, private readonly twilioSmsService: TwilioSmsService) { }
 
   private async comparePasswords(
     inputPassword: string,
@@ -244,6 +247,86 @@ export class UserController {
         {
           status: HttpStatus.FORBIDDEN,
           error: 'Incorrect previous password!',
+        },
+        HttpStatus.FORBIDDEN,
+      );
+    }
+  }
+
+  @Post('users/replacePassword/sendSMS/:contact')
+  async sendSms(@Param('contact') contact: string) {
+    const cod = Math.floor(Math.random() * 9000) + 1000;
+    const message = `Segue código para troca de senha: ${cod}`;
+
+    const contactUser = await this.prisma.contacts.findFirst({
+      where: {
+        contact: contact,
+      },
+    });
+
+    if (contactUser) {
+      const to = '+' + contactUser.codCountry + contactUser.contact;
+
+      try {
+        const result = await this.twilioSmsService.sendSms(to, message);
+        return {
+          success: true,
+          message: 'SMS sent successfully',
+          sid: result.sid,
+        };
+      } catch (error) {
+        return { success: false, message: 'Failed to send SMS' };
+      }
+    } else {
+      throw new HttpException(
+        {
+          status: HttpStatus.FORBIDDEN,
+          error: 'User no found!',
+        },
+        HttpStatus.FORBIDDEN,
+      );
+    }
+  }
+
+  @Post('users/replacePassword/sendEmail/:email')
+  async sendEmail(@Param('email') email: string) {
+    const cod = Math.floor(Math.random() * 9000) + 1000;
+    const message = `Segue código para troca de senha: ${cod}`;
+
+    const emailUser = await this.prisma.users.findFirst({
+      where: {
+        email: email,
+      },
+    });
+
+    if (emailUser) {
+      try {
+        const transporter = nodemailer.createTransport({
+          service: 'Gmail',
+          auth: {
+            user: 'yuri.santos.cco@gmail.com',
+            pass: 'idbcgiuoyhfsmxqj',
+          },
+        });
+
+        const info = await transporter.sendMail({
+          from: 'seu_email@gmail.com',
+          to: emailUser.email,
+          subject: 'Troca de Senha',
+          text: message,
+        });
+
+        console.log('E-mail enviado: ', info.messageId);
+        return true;
+      } catch (error) {
+        console.error('Erro ao enviar o e-mail: ', error);
+        return false;
+      }
+    } else {
+      throw new HttpException(
+        {
+          status: HttpStatus.FORBIDDEN,
+          error: 'User no found!',
         },
         HttpStatus.FORBIDDEN,
       );
