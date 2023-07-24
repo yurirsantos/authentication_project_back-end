@@ -17,13 +17,24 @@ export class AuthenticationService {
     private readonly prisma: PrismaService,
   ) { }
 
-  private async findUserByEmail(email: string): Promise<UserType | null> {
-    return this.prisma.users.findFirst({ where: { email } });
+  private async findUserByEmail(emailLogin: string): Promise<UserType | null> {
+    return this.prisma.users.findFirst({ where: { email: emailLogin } });
   }
 
-  private async findUserByPhone(phone: string): Promise<UserType | null> {
-    phone = phone.replace(/\D/g, '')
-    return this.prisma.users.findFirst({ where: { phone } });
+  private async findUserByPhone(contactLogin: string): Promise<UserType | null> {
+    const contact = await this.prisma.contacts.findFirst({
+      where: {
+        contact: contactLogin.replace(/\D/g, '')
+      }
+    });
+
+    const user = await this.prisma.users.findFirst({
+      where: {
+        id: contact.userId,
+      },
+    });
+
+    return user;
   }
 
 
@@ -62,7 +73,6 @@ export class AuthenticationService {
           id: user.id,
           name: user.name,
           email: user.email,
-          phone: user.phone,
         };
 
         return {

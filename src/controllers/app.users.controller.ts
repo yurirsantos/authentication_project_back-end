@@ -45,7 +45,6 @@ export class UserController {
         id: true,
         name: true,
         email: true,
-        phone: true,
         createdAt: true,
         updateAt: true,
       },
@@ -64,7 +63,6 @@ export class UserController {
           id: true,
           name: true,
           email: true,
-          phone: true,
           createdAt: true,
           updateAt: true,
         },
@@ -97,7 +95,7 @@ export class UserController {
     @Body() Body: UserType,
     @Headers('Authorization') authHeader: string,
   ) {
-    const { email, name, phone, acceptTerm, receiveOffers } = Body;
+    const { email, name, acceptTerm, receiveOffers, contact } = Body;
     let { password } = Body;
 
     password = await bcrypt.hash(password, saltOrRounds);
@@ -111,37 +109,40 @@ export class UserController {
         HttpStatus.FORBIDDEN,
       );
     }
-    if (phone.length != 13) {
-      throw new HttpException(
-        {
-          status: HttpStatus.FORBIDDEN,
-          error: 'Phone is invalid!',
-        },
-        HttpStatus.FORBIDDEN,
-      );
-    }
 
     try {
-      return await this.prisma.users.create({
+      const registerUser = await this.prisma.users.create({
         data: {
           id: randomUUID(),
           email,
           name,
           password,
-          phone,
           acceptTerm,
           receiveOffers,
         },
       });
+      if (registerUser) {
+        const registerContact = await this.prisma.contacts.create({
+          data: {
+            id: randomUUID(),
+            codCountry: contact.codCountry,
+            contact: contact.contact,
+            userRelation: {
+              connect: {
+                id: registerUser.id,
+              },
+            },
+          },
+        });
+        if (registerUser && registerContact) {
+          return registerUser;
+        }
+      }
     } catch (error) {
       let returnMessageError = 'User no registered!';
 
       if (error.meta.target == 'email') {
         returnMessageError = 'E-mail já cadastrado!';
-      }
-
-      if (error.meta.target == 'cpf') {
-        returnMessageError = 'CPF já cadastrado!';
       }
 
       throw new HttpException(
@@ -157,7 +158,7 @@ export class UserController {
   @UseGuards(AuthGuard('jwt'))
   @Put('users/update/:userId')
   async update(@Param('userId') userId: string, @Body() Body: UserType) {
-    const { email, name, phone, acceptTerm, receiveOffers } = Body;
+    const { email, name, acceptTerm, receiveOffers } = Body;
 
     if (name.length <= 3) {
       throw new HttpException(
@@ -177,7 +178,6 @@ export class UserController {
         data: {
           email,
           name,
-          phone,
           acceptTerm,
           receiveOffers,
         },
@@ -187,10 +187,6 @@ export class UserController {
 
       if (error.meta.target == 'email') {
         returnMessageError = 'E-mail já cadastrado!';
-      }
-
-      if (error.meta.target == 'cpf') {
-        returnMessageError = 'CPF já cadastrado!';
       }
 
       throw new HttpException(
