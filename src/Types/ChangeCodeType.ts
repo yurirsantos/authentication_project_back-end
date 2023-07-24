@@ -1,4 +1,4 @@
-export type PasswordChangeCodeType = {
+export type ChangeCodeType = {
   code: number;
   status: boolean;
   expirationDate: string;
@@ -8,4 +8,8 @@ export type PasswordChangeCodeType = {
 export type PasswordChangeCodeReplacePasswordType = {
   code: number;
   password: string;
+};
+
+export type ChangeCodeActiveAccountType = {
+  code: number;
 };

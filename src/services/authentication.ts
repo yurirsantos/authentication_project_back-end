@@ -73,6 +73,7 @@ export class AuthenticationService {
           id: user.id,
           name: user.name,
           email: user.email,
+          status: user.status,
         };
 
         return {

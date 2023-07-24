@@ -8,6 +8,7 @@ export type UserType = {
   acceptTerm: boolean;
   receiveOffers: boolean;
   contact?: ContactType;
+  status?: boolean;
 };
 
 export type UserReplacePasswordType = {

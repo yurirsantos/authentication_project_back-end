@@ -137,8 +137,42 @@ export class UserController {
             },
           },
         });
-        if (registerUser && registerContact) {
+        const cod = Math.floor(Math.random() * 9000) + 1000;
+        const message = `Segue código para ativação de conta: ${cod}`;
+
+        try {
+          const transporter = nodemailer.createTransport({
+            service: 'Gmail',
+            auth: {
+              user: 'trocadesenha222@gmail.com',
+              pass: 'jfnfcvoscofcnbbg',
+            },
+          });
+
+          const info = await transporter.sendMail({
+            from: 'seu_email@gmail.com',
+            to: registerUser.email,
+            subject: 'Ativação de Conta',
+            text: message,
+          });
+
+          await this.prisma.changeCodes.create({
+            data: {
+              id: randomUUID(),
+              code: cod,
+              expirationDate: new Date(Date.now() + 1 * 60 * 1000),
+              status: false,
+              userRelation: {
+                connect: {
+                  id: registerUser.id,
+                },
+              },
+            },
+          });
           return registerUser;
+        } catch (error) {
+          console.error('Erro ao enviar o e-mail: ', error);
+          return false;
         }
       }
     } catch (error) {
@@ -275,7 +309,7 @@ export class UserController {
       try {
         const result = await this.twilioSmsService.sendSms(to, message);
 
-        await this.prisma.passwordChangeCodes.create({
+        await this.prisma.changeCodes.create({
           data: {
             id: randomUUID(),
             code: cod,
@@ -336,7 +370,7 @@ export class UserController {
           text: message,
         });
 
-        await this.prisma.passwordChangeCodes.create({
+        await this.prisma.changeCodes.create({
           data: {
             id: randomUUID(),
             code: cod,
@@ -362,6 +396,52 @@ export class UserController {
         },
         HttpStatus.FORBIDDEN,
       );
+    }
+  }
+
+  @Post('users/activeAccount/sendEmail/:email')
+  async sendEmailActiveAccount(@Param('email') email: string) {
+    const cod = Math.floor(Math.random() * 9000) + 1000;
+    const message = `Segue código para ativação de conta: ${cod}`;
+    const user = await this.prisma.users.findFirst({
+      where: {
+        email: email,
+      },
+    });
+
+    try {
+      const transporter = nodemailer.createTransport({
+        service: 'Gmail',
+        auth: {
+          user: 'trocadesenha222@gmail.com',
+          pass: 'jfnfcvoscofcnbbg',
+        },
+      });
+
+      const info = await transporter.sendMail({
+        from: 'seu_email@gmail.com',
+        to: user.email,
+        subject: 'Ativação de Conta',
+        text: message,
+      });
+
+      await this.prisma.changeCodes.create({
+        data: {
+          id: randomUUID(),
+          code: cod,
+          expirationDate: new Date(Date.now() + 1 * 60 * 1000),
+          status: false,
+          userRelation: {
+            connect: {
+              id: user.id,
+            },
+          },
+        },
+      });
+      return true;
+    } catch (error) {
+      console.error('Erro ao enviar o e-mail: ', error);
+      return false;
     }
   }
 

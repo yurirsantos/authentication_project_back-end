@@ -8,16 +8,17 @@ datasource db {
 }
 
 model Users {
-  id                  String                @id
-  name                String
-  email               String                @unique
-  password            String
-  acceptTerm          Boolean
-  receiveOffers       Boolean               @default(false)
-  createdAt           DateTime              @default(now())
-  updateAt            DateTime              @default(now())
-  Contacts            Contacts[]
-  PasswordChangeCodes PasswordChangeCodes[]
+  id            String        @id
+  name          String
+  email         String        @unique
+  password      String
+  acceptTerm    Boolean
+  receiveOffers Boolean       @default(false)
+  status        Boolean       @default(false)
+  createdAt     DateTime      @default(now())
+  updateAt      DateTime      @default(now())
+  Contacts      Contacts[]
+  ChangeCodes   ChangeCodes[]
 }
 
 model Contacts {
@@ -30,7 +31,7 @@ model Contacts {
   updateAt     DateTime @default(now())
 }
 
-model PasswordChangeCodes {
+model ChangeCodes {
   id             String   @id
   code           Int
   status         Boolean
