@@ -7,6 +7,7 @@ import { PrismaService } from './prisma.service';
 import { AuthenticationService } from './services/authentication';
 import { PassportJWT } from './services/passport-JWT';
 import { TwilioSmsService } from './services/twilio-sms.service';
+import { PasswordChangeCodeController } from './controllers/app.passwordChangeCode.controller';
 @Module({
   imports: [
     PassportModule,
@@ -15,7 +16,7 @@ import { TwilioSmsService } from './services/twilio-sms.service';
       signOptions: { expiresIn: '1h' },
     }),
   ],
-  controllers: [UserController, AuthController],
+  controllers: [UserController, AuthController, PasswordChangeCodeController],
   providers: [
     PrismaService,
     AuthenticationService,

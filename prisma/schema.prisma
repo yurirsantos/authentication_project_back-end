@@ -8,15 +8,16 @@ datasource db {
 }
 
 model Users {
-  id            String     @id
-  name          String
-  email         String     @unique
-  password      String
-  acceptTerm    Boolean
-  receiveOffers Boolean    @default(false)
-  createdAt     DateTime   @default(now())
-  updateAt      DateTime   @default(now())
-  Contacts      Contacts[]
+  id                  String                @id
+  name                String
+  email               String                @unique
+  password            String
+  acceptTerm          Boolean
+  receiveOffers       Boolean               @default(false)
+  createdAt           DateTime              @default(now())
+  updateAt            DateTime              @default(now())
+  Contacts            Contacts[]
+  PasswordChangeCodes PasswordChangeCodes[]
 }
 
 model Contacts {
@@ -27,4 +28,15 @@ model Contacts {
   userId       String
   createdAt    DateTime @default(now())
   updateAt     DateTime @default(now())
+}
+
+model PasswordChangeCodes {
+  id             String   @id
+  code           Int
+  status         Boolean
+  expirationDate DateTime
+  userRelation   Users    @relation(fields: [userId], references: [id])
+  userId         String
+  createdAt      DateTime @default(now())
+  updateAt       DateTime @default(now())
 }

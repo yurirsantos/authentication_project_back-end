@@ -263,12 +263,32 @@ export class UserController {
         contact: contact,
       },
     });
+    const user = await this.prisma.users.findFirst({
+      where: {
+        id: contactUser.userId,
+      },
+    });
 
-    if (contactUser) {
+    if (contactUser && user) {
       const to = '+' + contactUser.codCountry + contactUser.contact;
 
       try {
         const result = await this.twilioSmsService.sendSms(to, message);
+
+        await this.prisma.passwordChangeCodes.create({
+          data: {
+            id: randomUUID(),
+            code: cod,
+            expirationDate: new Date(Date.now() + 1 * 60 * 1000),
+            status: false,
+            userRelation: {
+              connect: {
+                id: user.id,
+              },
+            },
+          },
+        });
+
         return {
           success: true,
           message: 'SMS sent successfully',
@@ -293,30 +313,42 @@ export class UserController {
     const cod = Math.floor(Math.random() * 9000) + 1000;
     const message = `Segue código para troca de senha: ${cod}`;
 
-    const emailUser = await this.prisma.users.findFirst({
+    const user = await this.prisma.users.findFirst({
       where: {
         email: email,
       },
     });
 
-    if (emailUser) {
+    if (user) {
       try {
         const transporter = nodemailer.createTransport({
           service: 'Gmail',
           auth: {
-            user: 'yuri.santos.cco@gmail.com',
-            pass: 'idbcgiuoyhfsmxqj',
+            user: 'trocadesenha222@gmail.com',
+            pass: 'jfnfcvoscofcnbbg',
           },
         });
 
         const info = await transporter.sendMail({
           from: 'seu_email@gmail.com',
-          to: emailUser.email,
+          to: user.email,
           subject: 'Troca de Senha',
           text: message,
         });
 
-        console.log('E-mail enviado: ', info.messageId);
+        await this.prisma.passwordChangeCodes.create({
+          data: {
+            id: randomUUID(),
+            code: cod,
+            expirationDate: new Date(Date.now() + 1 * 60 * 1000),
+            status: false,
+            userRelation: {
+              connect: {
+                id: user.id,
+              },
+            },
+          },
+        });
         return true;
       } catch (error) {
         console.error('Erro ao enviar o e-mail: ', error);
